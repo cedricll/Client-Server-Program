@@ -8,7 +8,21 @@
 #include <sys/types.h>
 #include <netdb.h>
 
+// #include <conio.h> // for reading csv files
+
 #define PORT 30000
+#define size_of_AAPL 503
+
+struct date {
+    char date_str[10];
+    int year;
+    int month;
+    int day;
+}
+
+struct stock {
+    int price;
+}
 
 int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
 { 
@@ -19,12 +33,55 @@ int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
         1.) read from apple and twitter files; 7/2/2018 - 6/30/2020
             -> interested 1st and 5th column
             -> gaps in data
-            -> store in a dict-like data structure?
+            -> use "date" and "stock" structs to collect the data (array of structs for date and another for stock)
         2.) start listening to client reuqests
     */
 
     printf("server started\n");
 
+    // read from the csv files
+    FILE *filePointer; // for AAPL, need to make another pointer for TWTR
+    
+    filePointer = fopen(argv[1], "r");
+    if (filePointer == NULL) {
+        printf("Failed to open %s\n", argv[1]);
+    }
+    else {
+        printf("File opened: %s\n", argv[1]);
+    }
+
+    char data_to_read[size_of_AAPL];
+    int row = 0;
+    int col = 0;
+    
+    while (fgets(data_to_read, size_of_AAPL, filePointer) != NULL) {
+        col = 0;
+        row++;
+
+        if (row == 1) { // avoid reading the data headers
+            continue;
+        }
+
+        char *value = strtok(data_to_read, ", ");
+        while (value) {
+            if (col == 0) {
+                printf("col 1: %s", value); // date 
+            }
+
+            if (col == 4) {
+                printf("col 5 %s", value);  // price
+            }
+            value = strtok(NULL, ", ");
+            col++;
+        }
+        // printf("%s", data_to_read);
+        printf("\n");
+    }
+
+    fclose(filePointer);
+    // printf("End of file reading");
+
+    // START OF SOCKET TUTORIAL
     int server_fd, new_socket, valread; 
     struct sockaddr_in address; 
     int opt = 1; 

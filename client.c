@@ -17,6 +17,8 @@ int main(int argc, char const *argv[]) // ./client server.ics.uci.edu 300000
             -> quit
         - handle user inputs!!!
     */
+
+    // START OF SOCKET TUTORIAL
     int sock = 0, valread; 
     struct sockaddr_in serv_addr; 
     char *hello = "Hello from client"; 
