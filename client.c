@@ -65,8 +65,8 @@ int hostname_to_ip(char * hostname , char* ip)
 
 int main(int argc, char const *argv[]) // ./client server.ics.uci.edu 300000
 { 
-    printf("argv[1]:%s\n", argv[1]); //server.ics.uci.edu, NEED TO MODIFY CODE to account for this domain. 
-    printf("argv[2]:%s\n", argv[2]); //300000
+    // printf("argv[1]:%s\n", argv[1]); //server.ics.uci.edu, NEED TO MODIFY CODE to account for this domain. 
+    // printf("argv[2]:%s\n", argv[2]); //300000
     // struct hostent *lh = gethostbyname(argv[1]);
     // printf("host: %d\n", lh->h_addr);
 
@@ -115,13 +115,14 @@ int main(int argc, char const *argv[]) // ./client server.ics.uci.edu 300000
 
     // TODO: commands
     // char *cmd = "Hello from client";  // modify this to show the command on the server screen
-    char buffer[1024] = {0}; 
+    
     char cmd[MAXLINE];
     
     char cmdline[MAXLINE];
     // char *argv[MAXARGC];
 
     while (1) {
+        char buffer[1024] = {0}; 
 		// Display prompt and get user input
 		printf("> ");
 		fgets(cmdline, MAXLINE, stdin);
@@ -164,7 +165,7 @@ int main(int argc, char const *argv[]) // ./client server.ics.uci.edu 300000
             continue;
         }
 
-        printf("buf: %s\n", buf); // need to parse buf
+        // printf("buf: %s\n", buf); // need to parse buf
         printf("cmd: %s\n", cmd);
         
 
@@ -177,8 +178,9 @@ int main(int argc, char const *argv[]) // ./client server.ics.uci.edu 300000
 
     // send(sock , cmd , strlen(cmd) , 0 ); // contents of "cmd" send to server window
     // printf("Client: Hello message sent\n"); // client window
-    valread = read( sock , buffer, 1024); 
-    printf("buffer: %s\n",buffer );  // from server to client
+
+    // valread = read( sock , buffer, 1024); 
+    // printf("buffer: %s\n",buffer );  // from server to client
     return 0; 
 } 
 
