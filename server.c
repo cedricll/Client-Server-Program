@@ -11,6 +11,7 @@
 #define PORT 30000
 #define size_of_AAPL 503
 #define size_of_TWTR 503
+#define MAXLINE 30
 
 struct date {
     char date_str[10];
@@ -23,11 +24,11 @@ struct stock {
     int price;
 };
 
-int parse_date(char *str, struct date *dates, int index) {
+int parse_date(char *str, struct date *dates, int index) { // minor fix: adjust to months with 30 or 31 days, february with 28 and 29?
     // printf("|parse_date function ran| ");
     // Extract the first token, the year
     int curr = 0; // 0 for year, 1 for month, 2 for day
-    char *found;
+    char *found; // pointer to parse the given date
     char str_copy[10];
     strcpy(str_copy, str);
 
@@ -69,7 +70,7 @@ int parse_date(char *str, struct date *dates, int index) {
     return 1;
 }
 
-void collect_data(char data_to_read[], int size, FILE** fp, struct date *dates, struct stock *stocks) { 
+void collect_data(char data_to_read[], int size, FILE** fp, struct date *dates, struct stock *stocks) { // collects data from a file
     int row = 0;
     int col = 0;
     int index = -1;
@@ -110,6 +111,93 @@ void collect_data(char data_to_read[], int size, FILE** fp, struct date *dates, 
     }
 }
 
+void prices(char* stock_name, char* date, struct date *company_dates, struct stock *company_stocks, int size) { // FIX
+    // display stock prices on a given date
+    // if params dont exists, server responds with "Unknown" to client screen
+    printf("Date: %s", date);
+    int i;
+    for (i = 0; i < size; i++) {
+        if ( strcmp(company_dates[i].date_str, date) == 0 ) {
+            char buffer[30];
+            printf("struct price: %s", company_stocks[i].price);
+            // itoa(company_stocks[i].price, buffer, 10);
+            sprintf(buffer, "%d", company_stocks[i].price);
+            printf("Price: $s", buffer);
+        }
+    }
+
+}
+
+void max_profit(char* stock_name) {
+    // calc max profit of a share
+}
+
+int check_stock_name(char *token, char *company1, char *company2) {
+    return strcmp(token, company1) == 0 || strcmp(token, company2) == 0;
+}
+
+int check_date_format(char* date) { // fix
+    return 1;
+}
+
+char *parse_buffer(char *buffer, struct date *company1_dates, struct stock *company1_stocks, struct date *company2_dates, struct stock *company2_stocks, char *company1, char *company2) { // FIX
+    // printf("parse_buffer func started\n");
+    // printf("company1: %s\n", company1);
+    // printf("company2: %s\n", company2);
+    const char s[2] = " ";
+    char *token;
+    
+    token = strtok(buffer, s);
+    char command[30];
+    char stock_name[30];
+    char date[30];
+    int curr = 0;
+    printf("parsing buffer\n");
+    while (token != NULL) {
+        printf("token: %s\n", token);
+        // printf("curr %d\n", curr);
+        
+        if (curr == 0) {
+            
+            strcpy(command, token);
+            printf("command: %s\n", command);
+            if (strcmp(command, "Prices") == 0) {
+                printf("Prices command\n");
+            }
+            else if (strcmp(command, "MaxProfit") == 0) {
+                printf("Max Profit cmd\n");
+            }
+        }
+        else if (curr == 1) {
+           
+            if ( check_stock_name(token, company1, company2) ) {
+                strcpy(stock_name, token);
+            }
+            printf("stock_name: %s\n", stock_name);
+        }
+        // else if (curr == 2) {
+        //     printf("WTF");
+        //     if ( check_date_format(token) ) {
+        //         strcpy(date, token);
+        //     }
+        //     printf("date %s", date);
+        // }
+       
+        curr++;
+        token = strtok(NULL, s);
+    }
+    printf("dateeeeee: %s", date); // ! there's a delay.. why?
+}
+
+
+
+void copyCompanyName(char *name, char *file_name) { // AAPL.csv (8 - 4)
+    int i;
+    for (i = 0; i < strlen(file_name) - 4; i++) {
+        name[i] = file_name[i];
+    }
+}
+
 int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
 { 
     printf("argv[1]:%s\n", argv[1]); //AAPL.CSV
@@ -123,6 +211,15 @@ int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
 
         > check if csv files are valid
     */
+
+    char company1[MAXLINE];
+    char company2[MAXLINE];
+
+    copyCompanyName(company1, argv[1]);
+    copyCompanyName(company2, argv[2]);
+
+    // printf("company1: %s\n", company1);
+    // printf("company2: %s\n", company2);
 
     printf("server started\n");
 
@@ -161,8 +258,6 @@ int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
     struct sockaddr_in address; 
     int opt = 1; 
     int addrlen = sizeof(address); 
-    char buffer[1024] = {0}; 
-    char *hello = "Hello from server"; 
        
     // Creating socket file descriptor 
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) 
@@ -172,15 +267,16 @@ int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
     } 
        
     // Forcefully attaching socket to the port 8080 
-    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, // SO_REUSEPORT
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, // | SO_REUSEPORT
                                                   &opt, sizeof(opt))) 
     { 
         perror("setsockopt"); 
         exit(EXIT_FAILURE); 
     } 
+
     address.sin_family = AF_INET; 
     address.sin_addr.s_addr = INADDR_ANY; 
-    address.sin_port = htons( PORT ); 
+    address.sin_port = htons( atoi(argv[3]) ); // PORT
        
     // Forcefully attaching socket to the port 8080 
     if (bind(server_fd, (struct sockaddr *)&address,  
@@ -189,21 +285,38 @@ int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
         perror("bind failed"); 
         exit(EXIT_FAILURE); 
     } 
-    if (listen(server_fd, 3) < 0) 
+
+    if (listen(server_fd, 3) < 0) // 2nd param: defines the maximum length to which the queue of pending connections for sockfd may grow. 
     { 
         perror("listen"); 
         exit(EXIT_FAILURE); 
     } 
+
     if ((new_socket = accept(server_fd, (struct sockaddr *)&address,  
                        (socklen_t*)&addrlen))<0) 
     { 
         perror("accept"); 
         exit(EXIT_FAILURE); 
     } 
-    valread = read( new_socket , buffer, 1024); 
-    printf("%s\n",buffer ); 
-    send(new_socket , hello , strlen(hello) , 0 ); 
-    printf("Hello message sent\n"); 
+
+    // use AAPL_dates and AAPL_stocks structs to respond to user input
+    char buffer[1024] = {0}; 
+    char result[1024]; // sent to client screen
+    // modify this:
+
+    while (1) {
+        valread = read( new_socket , buffer, 1024); // client sends content to show server screen
+        printf("buffer: %s\n", buffer ); // parse buffer
+
+        // buffer functon
+        parse_buffer(buffer, AAPL_dates, AAPL_stocks, TWTR_dates, TWTR_stocks, company1, company2);
+
+        // printf("valread: %d\n", valread);
+        strcpy(result, "Testing Server Sent Message");
+
+        send(new_socket , result , strlen(result) , 0 ); // result of calc is recorded in "hello"
+        // printf("Server: Hello message sent\n"); 
+    } 
     return 0; 
 } 
 
