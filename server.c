@@ -143,7 +143,7 @@ int max_profit_helper(struct stock *company_stocks, int size) {
     int min_price = company_stocks[0].price;
     int price;
     int profit;
-    printf("helper max\n");
+    // printf("helper max\n");
     int i;
     // printf("min: %d", min_price);
     for (i = 1; i < size; i++) { 
@@ -163,14 +163,19 @@ int max_profit_helper(struct stock *company_stocks, int size) {
     return max_profit;
 }
 
-void max_profit(char *result, struct stock *company_stocks, int size) {
+void max_profit(char* stock_name, char *result, struct stock *company_stocks, int size) {
     // char buffer[30];
     // sprintf(buffer, "%d", company_stocks[i].price);
     // strcpy(result, buffer);
 
     int res = max_profit_helper(company_stocks, size);
-    printf("res: %d\n", res);
-    strcpy(result, "69");
+    // printf("res: %d\n", res);
+
+    char buffer[30];
+   
+    sprintf(buffer, "Maximum Profit for %s: %d", stock_name, res);
+    
+    strcpy(result, buffer);
 }
 
 int check_stock_name(char *token, char *company1, char *company2) {
@@ -191,16 +196,16 @@ void copyCompanyName(char *name, const char *file_name) { // AAPL.csv (8 - 4)
 
 int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
 { 
-    printf("argv[1]:%s\n", argv[1]); //AAPL.CSV
-    printf("argv[2]:%s\n", argv[2]); //TWTR.csv
-    printf("argv[3]:%s\n", argv[3]); //30000 // NEED TO MODIFY CLIENT/SERVER connection code from socket tutorial
+    // printf("argv[1]:%s\n", argv[1]); //AAPL.CSV
+    // printf("argv[2]:%s\n", argv[2]); //TWTR.csv
+    // printf("argv[3]:%s\n", argv[3]); //30000 // NEED TO MODIFY CLIENT/SERVER connection code from socket tutorial
     /*TODO:
-        1.) read from apple and twitter files; 7/2/2018 - 6/30/2020
-            -> gaps in data?
-            -> use "date" and "stock" structs to collect the data (array of structs for date and another for stock)
-        2.) start listening to client requests
+        1.) read from apple and twitter files; 7/2/2018 - 6/30/2020 (done)
+            -> gaps in data? 
+            -> use "date" and "stock" structs to collect the data (array of structs for date and another for stock) (done)
+        2.) start listening to client requests (done)
 
-        > check if csv files are valid
+        > check if csv files are valid (done)
     */
 
     char company1[MAXLINE];
@@ -209,10 +214,10 @@ int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
     copyCompanyName(company1, argv[1]);
     copyCompanyName(company2, argv[2]);
 
-    printf("company1: %s\n", company1);
-    printf("company2: %s\n", company2);
+    // printf("company1: %s\n", company1);
+    // printf("company2: %s\n", company2);
 
-    printf("server started\n");
+    printf("server started\n\n");
 
     struct date AAPL_dates[size_of_AAPL];
     struct stock AAPL_stocks[size_of_AAPL];
@@ -232,7 +237,7 @@ int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
         // throw error?
     }
     else {
-        printf("Files opened:\n%s\n%s\n", argv[1], argv[2]);
+        // printf("Files opened:\n%s\n%s\n", argv[1], argv[2]);
 
         char AAPL_to_read[size_of_AAPL];
         char TWTR_to_read[size_of_TWTR];
@@ -294,11 +299,11 @@ int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
     // char buffer[1024] = {0}; 
     // sent to client screen
     // modify this:
-
+    
     while (1) {
         char buffer[1024] = {0}; 
         valread = read( new_socket , buffer, 1024); // client sends content to show server screen
-        printf("buffer: %s\n", buffer ); // parse buffer
+        printf("%s\n", buffer ); // parse buffer
 
         // buffer functon
         char *buf = buffer;
@@ -323,7 +328,7 @@ int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
 
                 strcpy(cmd, found);
                 
-                printf("command: %s\n", cmd);
+                // printf("command: %s\n", cmd);
             }
             else if (curr == 1) {
                 // if ( check_stock_name(found, company1, company2) ) {
@@ -334,7 +339,7 @@ int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
                     // strcpy(result, "Invalid syntax");
                 // }
                 // }
-                printf("stock_name: %s\n", stock_name);
+                // printf("stock_name: %s\n", stock_name);
             }
             else if (curr == 2) {
                 // if ( check_date_format(token) ) { // NEED THIS
@@ -345,7 +350,7 @@ int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
                 strcpy(date, found);
                 
                 // }
-                printf("date %s\n", date);
+                // printf("date %s\n", date);
             }
             else {
                 break;
@@ -353,17 +358,17 @@ int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
             curr++;
         }
 
-        printf("While loop ended\n");
+        // printf("While loop ended\n");
 
         if (strcmp(cmd, "Prices") == 0) { // check date here
-            printf("Prices Function\n");
+            // printf("Prices Function\n");
             // assign result
             if (strcmp(stock_name, company1) == 0) { 
-                printf("Company1...\n");
+                // printf("Company1...\n");
                 prices(date, result, AAPL_dates, AAPL_stocks, size_of_AAPL);
             }
             else if (strcmp(stock_name, company2) == 0) {
-                printf("Company2...\n");
+                // printf("Company2...\n");
                 prices(date, result, TWTR_dates, TWTR_stocks, size_of_TWTR);
             }
             else {
@@ -373,28 +378,28 @@ int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
         }
 
         else if (strcmp(cmd, "MaxProfit") == 0) {
-            printf("MaxProfit Function\n");
+            // printf("MaxProfit Function\n");
 
             if (strcmp(stock_name, company1) == 0) { 
-                printf("Company1...Profit\n");
-                max_profit(result, AAPL_stocks, size_of_AAPL);
+                // printf("Company1...Profit\n");
+                max_profit(stock_name, result, AAPL_stocks, size_of_AAPL);
             }
             else if (strcmp(stock_name, company2) == 0) {
-                printf("Company2...Profit\n");
-                max_profit(result, TWTR_stocks, size_of_TWTR);
+                // printf("Company2...Profit\n");
+                max_profit(stock_name, result, TWTR_stocks, size_of_TWTR);
             }
             else {
                 strcpy(result, "Invalid syntax");
             }
         }
         else {
-            printf("Invalid command");
+            // printf("Invalid command");
             // assign result
             strcpy(result, "Invalid command");
         }
         
         // strcpy(result, "Testing Server Sent Message");
-        printf("Result to send: %s", result);
+        // printf("Result to send: %s", result);
         send(new_socket , result , strlen(result) , 0 ); // result of calc is recorded in "hello"
         // printf("Server: Hello message sent\n"); 
     } 

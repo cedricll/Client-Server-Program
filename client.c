@@ -130,9 +130,9 @@ int main(int argc, char const *argv[]) // ./client server.ics.uci.edu 300000
 
 		parseline(cmdline, argv);
 		// strcmp(argv[0], "free") == 0;
-        printf("user input1: %s\n", argv[0]);
-        printf("user input2: %s\n", argv[1]);
-		printf("user input3: %s\n", argv[2]);
+        // printf("user input1: %s\n", argv[0]);
+        // printf("user input2: %s\n", argv[1]);
+		// printf("user input3: %s\n", argv[2]);
 
         int buf_size = 100;
         char buf [buf_size];
@@ -166,14 +166,14 @@ int main(int argc, char const *argv[]) // ./client server.ics.uci.edu 300000
         }
 
         // printf("buf: %s\n", buf); // need to parse buf
-        printf("cmd: %s\n", cmd);
+        // printf("cmd: %s\n", cmd);
         
 
         send(sock , cmd , strlen(cmd) , 0 );
-        printf("Sent cmd to server\n");
+        // printf("Sent cmd to server\n");
 
         valread = read( sock , buffer, 1024); 
-        printf("buffer response: %s\n",buffer );  // from server to client
+        printf("%s\n",buffer );  // from server to client
 	}
 
     // send(sock , cmd , strlen(cmd) , 0 ); // contents of "cmd" send to server window
