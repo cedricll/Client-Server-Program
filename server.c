@@ -111,7 +111,7 @@ void collect_data(char data_to_read[], int size, FILE** fp, struct date *dates, 
     }
 }
 
-void prices(char* stock_name, char* date, struct date *company_dates, struct stock *company_stocks, int size) { // FIX
+void prices(char* date, struct date *company_dates, struct stock *company_stocks, int size) { // FIX
     // display stock prices on a given date
     // if params dont exists, server responds with "Unknown" to client screen
     printf("Date: %s", date);
@@ -136,66 +136,16 @@ int check_stock_name(char *token, char *company1, char *company2) {
     return strcmp(token, company1) == 0 || strcmp(token, company2) == 0;
 }
 
-int check_date_format(char* date) { // fix
+int check_date_format(char* date) { // TODO
     return 1;
 }
 
-char *parse_buffer(char *buffer, struct date *company1_dates, struct stock *company1_stocks, struct date *company2_dates, struct stock *company2_stocks, char *company1, char *company2) { // FIX
-    // printf("parse_buffer func started\n");
-    // printf("company1: %s\n", company1);
-    // printf("company2: %s\n", company2);
-    const char s[2] = " ";
-    char *token;
-    
-    token = strtok(buffer, s);
-    char command[30];
-    char stock_name[30];
-    char date[30];
-    int curr = 0;
-    printf("parsing buffer\n");
-    while (token != NULL) {
-        printf("token: %s\n", token);
-        // printf("curr %d\n", curr);
-        
-        if (curr == 0) {
-            
-            strcpy(command, token);
-            printf("command: %s\n", command);
-            if (strcmp(command, "Prices") == 0) {
-                printf("Prices command\n");
-            }
-            else if (strcmp(command, "MaxProfit") == 0) {
-                printf("Max Profit cmd\n");
-            }
-        }
-        else if (curr == 1) {
-           
-            if ( check_stock_name(token, company1, company2) ) {
-                strcpy(stock_name, token);
-            }
-            printf("stock_name: %s\n", stock_name);
-        }
-        // else if (curr == 2) {
-        //     printf("WTF");
-        //     if ( check_date_format(token) ) {
-        //         strcpy(date, token);
-        //     }
-        //     printf("date %s", date);
-        // }
-       
-        curr++;
-        token = strtok(NULL, s);
-    }
-    printf("dateeeeee: %s", date); // ! there's a delay.. why?
-}
-
-
-
-void copyCompanyName(char *name, char *file_name) { // AAPL.csv (8 - 4)
+void copyCompanyName(char *name, const char *file_name) { // AAPL.csv (8 - 4)
     int i;
-    for (i = 0; i < strlen(file_name) - 4; i++) {
+    for (i = 0; i < ( strlen(file_name) - 4) ; i++) {
         name[i] = file_name[i];
     }
+    name[( strlen(file_name) - 4)] = '\0';
 }
 
 int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
@@ -218,8 +168,8 @@ int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
     copyCompanyName(company1, argv[1]);
     copyCompanyName(company2, argv[2]);
 
-    // printf("company1: %s\n", company1);
-    // printf("company2: %s\n", company2);
+    printf("company1: %s\n", company1);
+    printf("company2: %s\n", company2);
 
     printf("server started\n");
 
@@ -300,18 +250,92 @@ int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
     } 
 
     // use AAPL_dates and AAPL_stocks structs to respond to user input
-    char buffer[1024] = {0}; 
+    // char buffer[1024] = {0}; 
     char result[1024]; // sent to client screen
     // modify this:
 
     while (1) {
+        char buffer[1024] = {0}; 
         valread = read( new_socket , buffer, 1024); // client sends content to show server screen
         printf("buffer: %s\n", buffer ); // parse buffer
 
         // buffer functon
-        parse_buffer(buffer, AAPL_dates, AAPL_stocks, TWTR_dates, TWTR_stocks, company1, company2);
+        char *buf = buffer;
+        // printf("buf: %s\n", buf);
 
-        // printf("valread: %d\n", valread);
+        char *found;
+        char cmd[30];
+        char stock_name[30];
+        char date[30];
+
+        int curr = 0;
+
+
+        while( (found = strsep(&buf," ")) != NULL ) {
+            // printf("found: %s\n",found);
+
+            if (curr == 0) {
+                //strcat(found, "\0");
+
+                // clear cmd
+
+                strcpy(cmd, found);
+                
+                printf("command: %s\n", cmd);
+            }
+            else if (curr == 1) {
+                if ( check_stock_name(found, company1, company2) ) {
+                    strcpy(stock_name, found);
+                }
+                else {
+                    printf("Invalid");
+                    strcpy(result, "Invalid syntax");
+                }
+                // }
+                printf("stock_name: %s\n", stock_name);
+            }
+            else if (curr == 2) {
+                // if ( check_date_format(token) ) { // NEED THIS
+                //strcat(found, "\0");
+
+                // clear date
+
+                strcpy(date, found);
+                
+                // }
+                printf("date %s\n", date);
+            }
+            else {
+                break;
+            }
+            curr++;
+        }
+
+        printf("While loop ended\n");
+
+        if (strcmp(cmd, "Prices") == 0) {
+            printf("Prices Function");
+            // assign result
+            if (stock_name == company1) {
+                prices(date, AAPL_dates, AAPL_stocks, size_of_AAPL);
+            }
+            else if (stock_name == company2) {
+                prices(date, TWTR_dates, TWTR_stocks, size_of_TWTR);
+            }
+            else {
+                strcpy(result, "Invalid syntax");
+            }
+            
+        }
+
+        else if (strcmp(cmd, "MaxProfit") == 0) {
+            printf("MaxProfit Function");
+        }
+        else {
+            printf("Invalid command");
+            // assign result
+        }
+        
         strcpy(result, "Testing Server Sent Message");
 
         send(new_socket , result , strlen(result) , 0 ); // result of calc is recorded in "hello"
