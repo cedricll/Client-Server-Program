@@ -4,12 +4,11 @@
 #include <unistd.h> 
 #include <string.h> 
 #include <stdlib.h> 
-
 #include <netdb.h>
 #include <arpa/inet.h>
 #include<errno.h> //For errno - the error number
+
 #define _BSD_SOURCE
-// extern int h_errno;
 
 struct hostent *gethostbyname(const char *name);
 
@@ -70,16 +69,7 @@ int main(int argc, char const *argv[]) // ./client server.ics.uci.edu 300000
     // struct hostent *lh = gethostbyname(argv[1]);
     // printf("host: %d\n", lh->h_addr);
 
-    
-    /* TODO:
-        - commands
-            -> Prices(stockName, date) // display stock prices of a stock on a given date
-            -> MaxProfit(stockName) // calc max profit of a share of stock
-            -> quit
-        - handle user inputs!!!
-    */
-
-    // START OF SOCKET TUTORIAL
+    // START OF SOCKET
     int sock = 0, valread; 
     struct sockaddr_in serv_addr; 
     
@@ -112,24 +102,20 @@ int main(int argc, char const *argv[]) // ./client server.ics.uci.edu 300000
         printf("\nConnection Failed \n"); 
         return -1; 
     } 
-
-    // TODO: commands
-    // char *cmd = "Hello from client";  // modify this to show the command on the server screen
     
-    char cmd[MAXLINE];
+    char cmd[MAXLINE]; // content to send to server 
     
     char cmdline[MAXLINE];
-    // char *argv[MAXARGC];
 
     while (1) {
         char buffer[1024] = {0}; 
 		// Display prompt and get user input
 		printf("> ");
 		fgets(cmdline, MAXLINE, stdin);
-		if (feof(stdin)) exit(0);
+		if (feof(stdin)) exit(0);  
 
 		parseline(cmdline, argv);
-		// strcmp(argv[0], "free") == 0;
+		
         // printf("user input1: %s\n", argv[0]);
         // printf("user input2: %s\n", argv[1]);
 		// printf("user input3: %s\n", argv[2]);
@@ -137,12 +123,12 @@ int main(int argc, char const *argv[]) // ./client server.ics.uci.edu 300000
         int buf_size = 100;
         char buf [buf_size];
         int cx;
+
         // cx = snprintf(buf, buf_size, "%s %s %s", argv[0], argv[1], argv[2]);
         // if (cx >= 0 && cx < 100) {
         //     snprintf(butter + cx, buf_size - cx, "");
         // }
         
-
         if (strcmp(argv[0], "Prices") == 0 ) {
             // Prices function
             // argv[1] is stock_name
@@ -169,26 +155,11 @@ int main(int argc, char const *argv[]) // ./client server.ics.uci.edu 300000
         // printf("cmd: %s\n", cmd);
         
 
-        send(sock , cmd , strlen(cmd) , 0 );
+        send(sock , cmd , strlen(cmd) , 0 ); // send content "cmd" to server
         // printf("Sent cmd to server\n");
 
-        valread = read( sock , buffer, 1024); 
-        printf("%s\n",buffer );  // from server to client
+        valread = read( sock , buffer, 1024); // recieve content from server in the "buffer" variable
+        printf("%s\n",buffer );  // print out content sent from server
 	}
-
-    // send(sock , cmd , strlen(cmd) , 0 ); // contents of "cmd" send to server window
-    // printf("Client: Hello message sent\n"); // client window
-
-    // valread = read( sock , buffer, 1024); 
-    // printf("buffer: %s\n",buffer );  // from server to client
     return 0; 
 } 
-
-    // printf("inetoa: %s", inet_ntoa(argv[1], ));
-
-    // // struct in_addr addr;
-    // if (inet_aton(argv[1], &serv_addr.sin_addr) == 0) {
-    //     fprintf(stderr, "Invalid address\n");
-    //     // exit(EXIT_FAILURE);
-    // }
-    // printf("inet_ntoa: %s\n", inet_ntoa(serv_addr.sin_addr));
