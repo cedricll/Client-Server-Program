@@ -19,7 +19,7 @@ struct hostent *gethostbyname(const char *name);
 #define MAXLINE 30
 #define MAXARGC 30
 
-void parseline(char* cmdline, char *argv[]) {
+void parseline(char* cmdline, const char *argv[]) {
 	const char delimiter[2] = " ";
 	char *token;
 	int counter = 0;
@@ -36,7 +36,7 @@ void parseline(char* cmdline, char *argv[]) {
 	}
 }
 
-int hostname_to_ip(char * hostname , char* ip)
+int hostname_to_ip(const char * hostname , char* ip)
 {
 	struct hostent *he;
 	struct in_addr **addr_list;
@@ -85,7 +85,7 @@ int main(int argc, char const *argv[]) // ./client server.ics.uci.edu 300000
     serv_addr.sin_family = AF_INET; 
     serv_addr.sin_port = htons(atoi(argv[2])); // PORT 
 
-    char *hostname = argv[1];
+    const char *hostname = argv[1];
 	char ip[100];
 	
 	hostname_to_ip(hostname , ip);
