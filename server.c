@@ -1,3 +1,6 @@
+// Shuvam Raj Satyal, 13102529
+// Cedric Lim, 24026891
+
 #include <unistd.h> 
 #include <stdio.h> 
 #include <sys/socket.h> 
@@ -109,32 +112,107 @@ void collect_data(char data_to_read[], int size, FILE** fp, struct date *dates, 
     }
 }
 
-void prices(char* date, char* result, struct date *company_dates, struct stock *company_stocks, int size) { // FIX
+void prices(char* date, char* date_pointer, char* result, struct date *company_dates, struct stock *company_stocks, int size) { // FIX
     // display stock prices on a given date
     // if params dont exists, server responds with "Unknown" to client screen
     // printf("Date: %s\n", date);
-    int entry_exists = 0;
-    int i;
-    for (i = 0; i < size; i++) {
+
+    //check date first
+    int curr = 0; // 0 for year, 1 for month, 2 for day
+    char *found; // pointer to parse the given date
+    int isValid = 1;
+    int isLeapYear = 0;
+    int inFeb = 0;
+    int isMonth30 = 0;
+    int isUnknown = 0;
+    // char str_copy[10];
+    // strcpy(str_copy, str);
+
+    // found = strsep(&date_pointer,"-");
+    // printf("f: %s", (found));
+    while( (found = strsep(&date_pointer,"-")) != NULL ) {
         
-        if ( strcmp(company_dates[i].date_str, date) == 0 ) {
-            // printf("company_date: %s\n", company_dates[i].date_str);
+        if (curr == 0) { // year
+            if (atoi(found) <= 1000 ) {
+                isValid = 0;
+            }
+            else if (atoi(found) > 2020 || atoi(found) < 2018) {
+                isUnknown = 1;
+            }
+            else if (((atoi(found) % 4 == 0) && (atoi(found) % 100 != 0)) || (atoi(found) % 400 == 0)) {
+                isLeapYear = 1;
+            }
+        }
 
-            char buffer[30];
-            // printf("struct price: %d\n", company_stocks[i].price);
+        else if (curr == 1) { // month
+            if (atoi(found) > 12 || atoi(found) < 1) {
+                isValid = 0;
+            }
+            else if (atoi(found) == 2) {
+               inFeb = 1;
+            }
+            else if (atoi(found) == 4 || atoi(found) == 6 || atoi(found) == 9 || atoi(found) == 11) {
+                isMonth30 = 1;
+            }
+        }
 
-            sprintf(buffer, "%d", company_stocks[i].price);
-            // printf("Price: %s\n", buffer);
+        else if (curr == 2) { // day
+            if (atoi(found) > 31 || atoi(found) < 1) {
+                isValid = 0;
+            }
+            else if (inFeb == 1 && isLeapYear == 1) {
+                if (atoi(found) > 29) {
+                    isValid = 0;
+                }
+            }
+            else if (inFeb == 1 && isLeapYear == 0) {
+                if (atoi(found) > 28) {
+                    isValid = 0;
+                }
+            }
+            else if (isMonth30 == 1) {
+                if (atoi(found) > 30) {
+                    isValid = 0;
+                }
+            }
+        }
+        else {
+            break;
+        }
+        curr++;
+    }
 
-            strcpy(result, buffer);
-            // printf("result: %s", result);
+    if (isValid == 1) {
+        int entry_exists = 0;
+        int i;
+        for (i = 0; i < size; i++) {
+            
+            if ( strcmp(company_dates[i].date_str, date) == 0 ) {
+                // printf("company_date: %s\n", company_dates[i].date_str);
 
-            entry_exists = 1;
+                char buffer[30];
+                // printf("struct price: %d\n", company_stocks[i].price);
+
+                sprintf(buffer, "%d", company_stocks[i].price);
+                // printf("Price: %s\n", buffer);
+
+                strcpy(result, buffer);
+                // printf("result: %s", result);
+
+                entry_exists = 1;
+            }
+        }
+        if (entry_exists == 0) {
+            strcpy(result, "Unknown");
         }
     }
-    if (entry_exists == 0) {
+    else if (isValid == 0){
+        strcpy(result, "Invalid syntax");
+    }
+    else if (isUnknown == 1) {
         strcpy(result, "Unknown");
     }
+    
 }
 
 int max_profit_helper(struct stock *company_stocks, int size) {
@@ -261,7 +339,7 @@ int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
         exit(EXIT_FAILURE); 
     } 
        
-    // Forcefully attaching socket to the port 8080 
+    // Forcefully attaching socket to the port 30000 
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, // | SO_REUSEPORT
                                                   &opt, sizeof(opt))) 
     { 
@@ -273,7 +351,7 @@ int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
     address.sin_addr.s_addr = INADDR_ANY; 
     address.sin_port = htons( atoi(argv[3]) ); // PORT
        
-    // Forcefully attaching socket to the port 8080 
+    // Forcefully attaching socket to the port 30000 
     if (bind(server_fd, (struct sockaddr *)&address,  
                                  sizeof(address))<0) 
     { 
@@ -298,9 +376,12 @@ int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
    
     // char buffer[1024] = {0}; // this is content sent to the client
     while (1) {
+
         char buffer[1024] = {0}; // placement before or in while loop?
         valread = read( new_socket , buffer, 1024); // reads content sent from the client
-        printf("%s\n", buffer ); // shows client commands, FIX: show only certain commands that work?
+        // printf("%s\n", buffer ); // shows client commands, FIX: show only certain commands that work?
+        char buffer_copy[1024];
+        strcpy(buffer_copy, buffer);
 
         char *buf = buffer;
         // printf("buf: %s\n", buf);
@@ -339,11 +420,17 @@ int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
             // assign result
             if (strcmp(stock_name, company1) == 0) { 
                 // printf("Company1...\n");
-                prices(date, result, AAPL_dates, AAPL_stocks, size_of_AAPL);
+                char date_copy[30];
+                strcpy(date_copy, date);
+                char *d = date;
+                prices(date_copy, d, result, AAPL_dates, AAPL_stocks, size_of_AAPL);
             }
             else if (strcmp(stock_name, company2) == 0) {
                 // printf("Company2...\n");
-                prices(date, result, TWTR_dates, TWTR_stocks, size_of_TWTR);
+                char date_copy[30];
+                strcpy(date_copy, date);
+                char *d = date;
+                prices(date_copy, d, result, TWTR_dates, TWTR_stocks, size_of_TWTR);
             }
             else {
                 strcpy(result, "Invalid syntax");
@@ -370,6 +457,10 @@ int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
             // printf("Invalid command");
             // assign result
             strcpy(result, "Invalid command");
+        }
+
+        if (strcmp(result, "Invalid syntax") != 0) {
+            printf("%s\n", buffer_copy );
         }
         
         // strcpy(result, "Testing Server Sent Message");
