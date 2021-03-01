@@ -61,10 +61,6 @@ int hostname_to_ip(const char * hostname , char* ip)
 	return 1;
 }
 
-
-
-// void()
-
 int main(int argc, char const *argv[]) // ./client server.ics.uci.edu 300000
 { 
     // printf("argv[1]:%s\n", argv[1]); //server.ics.uci.edu, NEED TO MODIFY CODE to account for this domain. 

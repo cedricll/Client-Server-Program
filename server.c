@@ -276,14 +276,6 @@ int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
     // printf("argv[2]:%s\n", argv[2]); //TWTR.csv
     // printf("argv[3]:%s\n", argv[3]); //30000 // NEED TO MODIFY CLIENT/SERVER connection code from socket tutorial
 
-    /*TODO:
-        1.) account for dates 7/2/2018 - 6/30/2020 
-            -> gaps in data? 
-    
-        2.) stay listening to client requests 
-
-    */
-
     char company1[MAXLINE];
     char company2[MAXLINE];
 
@@ -471,23 +463,3 @@ int main(int argc, char const *argv[]) // ./server AAPL.csv TWTR.csv 30000
     return 0; 
 } 
 
-
-// printf("loop through structs:\n");
-    // int i;
-    // for (i = 0; i < size_of_TWTR; i++) {
-    //     printf("Apple:\n");
-    //     printf("date: %s " , AAPL_dates[i].date_str);
-    //     printf("day: %d ", AAPL_dates[i].day);
-    //     printf("month: %d ", AAPL_dates[i].month);
-    //     printf("year: %d ", AAPL_dates[i].year);
-        
-    //     printf("price: %d\n\n", AAPL_stocks[i].price );
-        
-    //     printf("Twitter:\n");
-    //     printf("date: %s " , TWTR_dates[i].date_str);
-    //     printf("day: %d ", TWTR_dates[i].day);
-    //     printf("month: %d ", TWTR_dates[i].month);
-    //     printf("year: %d ", TWTR_dates[i].year);
-        
-    //     printf("price: %d\n\n", TWTR_stocks[i].price );
-    // }
